@@ -1,0 +1,77 @@
+import streamlit as st
+import pandas as pd
+import io
+
+st.set_page_config(page_title="Validador de Boletos", layout="wide")
+
+st.title("🔎 Validador de Boletos - Linha Digitável x Valor Total")
+
+# Upload do arquivo
+uploaded_file = st.file_uploader("Faça upload do arquivo Excel", type=["xlsx", "xls"])
+
+if uploaded_file:
+    # Carregar planilha
+    df = pd.read_excel(uploaded_file)
+
+    # Normaliza nomes de colunas (remove espaços, maiúscula/minúscula)
+    df.columns = df.columns.str.strip().str.lower()
+
+    # Verifica se as colunas existem
+    if "cod.barras" not in df.columns or "total" not in df.columns:
+        st.error("O arquivo deve conter as colunas 'Cod.Barras' e 'Total'.")
+    else:
+        # Renomeia para facilitar
+        df = df.rename(columns={"cod.barras": "CodBarras", "total": "Total"})
+
+        # Converte Total para numérico
+        df["Total"] = (
+            df["Total"]
+            .astype(str)
+            .str.replace("R$", "", regex=False)
+            .str.replace(".", "", regex=False)
+            .str.replace(",", ".", regex=False)
+            .astype(float)
+        )
+
+        # Extrair valor do código de barras (posição 10 a 19)
+        def extrair_valor(codbarras):
+            try:
+                valor_centavos = int(codbarras[9:19])  # índice começa em 0
+                return valor_centavos / 100
+            except:
+                return None
+
+        df["Valor_CodBarras"] = df["CodBarras"].astype(str).apply(extrair_valor)
+
+        # Comparação
+        df["Status"] = df.apply(
+            lambda x: "OK" if round(x["Total"], 2) == round(x["Valor_CodBarras"], 2) else "Divergente",
+            axis=1,
+        )
+
+        # Filtro
+        filtro = st.radio("Filtrar resultados:", ["Todos", "Somente Divergentes", "Somente OK"])
+        if filtro == "Somente Divergentes":
+            df_filtrado = df[df["Status"] == "Divergente"]
+        elif filtro == "Somente OK":
+            df_filtrado = df[df["Status"] == "OK"]
+        else:
+            df_filtrado = df.copy()
+
+        st.dataframe(df_filtrado, use_container_width=True)
+
+        # Download em Excel
+        def to_excel(dataframe):
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+                dataframe.to_excel(writer, index=False, sheet_name="Validacao")
+            return output.getvalue()
+
+        excel_file = to_excel(df_filtrado)
+
+        st.download_button(
+            label="📥 Baixar Excel",
+            data=excel_file,
+            file_name="boletos_validacao.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
