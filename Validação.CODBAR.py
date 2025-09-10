@@ -65,14 +65,14 @@ if uploaded_file:
         df = df[df["FormaPgto"].astype(str).isin(formas_validas)]
 
         # Criar colunas formatadas para exibição
-        df["Total_Formatado"] = df["Total"].map(
+        df["Valor_Total_Titulo"] = df["Total"].map(
             lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         )
         df["Valor_CodBarras_Formatado"] = df["Valor_CodBarras"].map(
             lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             if pd.notnull(x) else ""
         )
-        df["Diferenca_Formatada"] = df["Diferenca"].map(
+        df["Diferenca_ft"] = df["Diferenca"].map(
             lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         )
 
@@ -92,9 +92,9 @@ if uploaded_file:
                 "NoTitulo",
                 "FormaPgto",
                 "CodBarras",
-                "Total_Formatado",
+                "Valor_Total_Titulo",
                 "Valor_CodBarras_Formatado",
-                "Diferenca_Formatada",
+                "Diferenca_ft",
                 "Status"
             ]],
             use_container_width=True
@@ -113,9 +113,9 @@ if uploaded_file:
                 "NoTitulo",
                 "FormaPgto",
                 "CodBarras",
-                "Total_Formatado",
+                "Valor_Total_Titulo",
                 "Valor_CodBarras_Formatado",
-                "Diferenca_Formatada",
+                "Diferenca_ft",
                 "Status"
             ]]
         )
