@@ -27,16 +27,7 @@ if uploaded_file:
             "forma pgto.": "FormaPgto"
         })
 
-        # Converte Total para numérico e ajusta para casas decimais
-        df["Total"] = (
-            df["Total"]
-            .astype(str)
-            .str.replace("R$", "", regex=False)
-            .str.replace(".", "", regex=False)
-            .astype(float)
-            / 100  # Corrige valores como 1707753 -> 17077.53
-        )
-
+       
         # Função de extração do valor do código de barras, variando por forma de pagamento
         def extrair_valor(codbarras, forma):
             try:
