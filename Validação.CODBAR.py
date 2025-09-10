@@ -17,11 +17,15 @@ if uploaded_file:
     df.columns = df.columns.str.strip().str.lower()
 
     # Verifica se as colunas existem
-    if "cod.barras" not in df.columns or "total" not in df.columns:
-        st.error("O arquivo deve conter as colunas 'Cod.Barras' e 'Total'.")
+    if "cod.barras" not in df.columns or "total" not in df.columns or "forma pgto." not in df.columns:
+        st.error("O arquivo deve conter as colunas 'Cod.Barras', 'Total' e 'Forma Pgto.'.")
     else:
         # Renomeia para facilitar
-        df = df.rename(columns={"cod.barras": "CodBarras", "total": "Total"})
+        df = df.rename(columns={
+            "cod.barras": "CodBarras",
+            "total": "Total",
+            "forma pgto.": "FormaPgto"
+        })
 
         # Converte Total para numérico
         df["Total"] = (
@@ -36,12 +40,15 @@ if uploaded_file:
         # Extrair valor do código de barras (posição 10 a 19)
         def extrair_valor(codbarras):
             try:
-                valor_centavos = int(codbarras[9:19])  # índice começa em 0
+                valor_centavos = int(str(codbarras)[9:19])  # índice começa em 0
                 return valor_centavos / 100
             except:
                 return None
 
         df["Valor_CodBarras"] = df["CodBarras"].astype(str).apply(extrair_valor)
+
+        # Diferença
+        df["Diferenca"] = df["Total"] - df["Valor_CodBarras"]
 
         # Comparação
         df["Status"] = df.apply(
@@ -49,7 +56,11 @@ if uploaded_file:
             axis=1,
         )
 
-        # Filtro
+        # Filtro de Forma de Pagamento (somente 30, 31, 19, 91, 11)
+        formas_validas = ["30", "31", "19", "91", "11"]
+        df = df[df["FormaPgto"].astype(str).isin(formas_validas)]
+
+        # Filtro de status
         filtro = st.radio("Filtrar resultados:", ["Todos", "Somente Divergentes", "Somente OK"])
         if filtro == "Somente Divergentes":
             df_filtrado = df[df["Status"] == "Divergente"]
@@ -75,3 +86,4 @@ if uploaded_file:
             file_name="boletos_validacao.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+
