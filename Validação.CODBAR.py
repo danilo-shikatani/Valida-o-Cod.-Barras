@@ -33,7 +33,6 @@ if uploaded_file:
             .astype(str)
             .str.replace("R$", "", regex=False)
             .str.replace(".", "", regex=False)
-            .str.replace(",", ".", regex=False)
             .astype(float)
             / 100  # Corrige valores como 1707753 -> 17077.53
         )
