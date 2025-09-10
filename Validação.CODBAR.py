@@ -27,7 +27,7 @@ if uploaded_file:
             "forma pgto.": "FormaPgto"
         })
 
-        # Converte Total para numérico
+        # Converte Total para numérico e ajusta para casas decimais
         df["Total"] = (
             df["Total"]
             .astype(str)
@@ -35,13 +35,14 @@ if uploaded_file:
             .str.replace(".", "", regex=False)
             .str.replace(",", ".", regex=False)
             .astype(float)
+            / 100  # Corrige valores como 1707753 -> 17077.53
         )
 
         # Extrair valor do código de barras (posição 10 a 19)
         def extrair_valor(codbarras):
             try:
                 valor_centavos = int(str(codbarras)[9:19])  # índice começa em 0
-                return valor_centavos / 100
+                return valor_centavos / 100  # converte para reais
             except:
                 return None
 
