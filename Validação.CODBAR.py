@@ -35,7 +35,7 @@ if uploaded_file:
                 if forma in ["30", "31"]:  # posições 09 a 19
                     valor_centavos = int(codbarras[9:19])
                 elif forma in ["19", "91", "11", "13"]:  # posições 08 a 18
-                    valor_centavos = int(codbarras[8:18])
+                    valor_centavos = int(codbarras[8:19])
                 else:
                     return None
                 return valor_centavos / 100
