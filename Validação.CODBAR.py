@@ -84,6 +84,7 @@ if uploaded_file:
         # Mostrar só colunas relevantes já formatadas
         st.dataframe(
             df_filtrado[[
+                "No. Titulo",
                 "FormaPgto",
                 "CodBarras",
                 "Total_Formatado",
@@ -103,6 +104,7 @@ if uploaded_file:
 
         excel_file = to_excel(
             df_filtrado[[
+                "No. Titulo",
                 "FormaPgto",
                 "CodBarras",
                 "Total_Formatado",
