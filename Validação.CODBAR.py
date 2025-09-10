@@ -32,10 +32,8 @@ if uploaded_file:
             df["Total"]
             .astype(str)
             .str.replace("R$", "", regex=False)
-            .str.replace(".", "", regex=False)
-            .str.replace(",", ".", regex=False)
             .astype(float)
-            / 100  # Corrige valores como 1707753 -> 17077.53
+         
         )
 
         # Extrair valor do código de barras (posição 10 a 19)
