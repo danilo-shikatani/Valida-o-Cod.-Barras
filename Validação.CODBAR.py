@@ -124,6 +124,6 @@ if uploaded_file:
 
         st.download_button(
             label="📥 Baixar Excel",
-            data=excel_file,
+            data=excel_file,)
 
 
