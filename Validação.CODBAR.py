@@ -16,18 +16,22 @@ if uploaded_file:
     # Normaliza nomes de colunas (remove espaços, maiúscula/minúscula)
     df.columns = df.columns.str.strip().str.lower()
 
-    # Verifica se as colunas existem
-    if "cod.barras" not in df.columns or "total" not in df.columns or "forma pgto." not in df.columns:
-        st.error("O arquivo deve conter as colunas 'Cod.Barras', 'Total' e 'Forma Pgto.'.")
+    # Verifica se as colunas obrigatórias existem
+    colunas_obrigatorias = ["cod.barras", "total", "forma pgto.", "filial", "no. titulo"]
+    faltando = [col for col in colunas_obrigatorias if col not in df.columns]
+
+    if faltando:
+        st.error(f"O arquivo deve conter as colunas: {', '.join(faltando)}")
     else:
         # Renomeia para facilitar
         df = df.rename(columns={
             "cod.barras": "CodBarras",
             "total": "Total",
-            "forma pgto.": "FormaPgto"
+            "forma pgto.": "FormaPgto",
+            "filial": "Filial",
+            "no. titulo": "NoTitulo"
         })
 
-       
         # Função de extração do valor do código de barras, variando por forma de pagamento
         def extrair_valor(codbarras, forma):
             try:
@@ -35,7 +39,7 @@ if uploaded_file:
                 if forma in ["30", "31"]:  # posições 09 a 19
                     valor_centavos = int(codbarras[9:19])
                 elif forma in ["19", "91", "11", "13"]:  # posições 08 a 18
-                    valor_centavos = int(codbarras[8:15])
+                    valor_centavos = int(codbarras[8:18])
                 else:
                     return None
                 return valor_centavos / 100
@@ -84,7 +88,8 @@ if uploaded_file:
         # Mostrar só colunas relevantes já formatadas
         st.dataframe(
             df_filtrado[[
-                "No. Titulo",
+                "Filial",
+                "NoTitulo",
                 "FormaPgto",
                 "CodBarras",
                 "Total_Formatado",
@@ -104,7 +109,8 @@ if uploaded_file:
 
         excel_file = to_excel(
             df_filtrado[[
-                "No. Titulo",
+                "Filial",
+                "NoTitulo",
                 "FormaPgto",
                 "CodBarras",
                 "Total_Formatado",
