@@ -43,7 +43,7 @@ if uploaded_file:
             try:
                 codbarras = str(codbarras)
                 if forma in ["30", "31"]:  # posições 09 a 19
-                    valor_centavos = int(codbarras[09:19])
+                    valor_centavos = int(codbarras[9:19])
                 elif forma in ["19", "91", "11"]:  # posições 08 a 18
                     valor_centavos = int(codbarras[8:18])
                 else:
@@ -124,6 +124,7 @@ if uploaded_file:
 
         st.download_button(
             label="📥 Baixar Excel",
-            data=excel_file,)
-
-
+            data=excel_file,
+            file_name="boletos_validacao.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
