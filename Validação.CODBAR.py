@@ -27,16 +27,35 @@ if uploaded_file:
             "forma pgto.": "FormaPgto"
         })
 
+        # Converte Total para numérico e ajusta para casas decimais
+        df["Total"] = (
+            df["Total"]
+            .astype(str)
+            .str.replace("R$", "", regex=False)
+            .str.replace(".", "", regex=False)
+            .str.replace(",", ".", regex=False)
+            .astype(float)
+            / 100  # Corrige valores como 1707753 -> 17077.53
+        )
 
-        # Extrair valor do código de barras (posição 10 a 18)
-        def extrair_valor(codbarras):
+        # Função de extração do valor do código de barras, variando por forma de pagamento
+        def extrair_valor(codbarras, forma):
             try:
-                valor_centavos = int(str(codbarras)[9:19])  # índice começa em 0
-                return valor_centavos / 100  # converte para reais
+                codbarras = str(codbarras)
+                if forma in ["30", "31"]:  # posições 09 a 19
+                    valor_centavos = int(codbarras[9:19])
+                elif forma in ["19", "91", "11"]:  # posições 08 a 18
+                    valor_centavos = int(codbarras[8:18])
+                else:
+                    return None
+                return valor_centavos / 100
             except:
                 return None
 
-        df["Valor_CodBarras"] = df["CodBarras"].astype(str).apply(extrair_valor)
+        df["Valor_CodBarras"] = df.apply(
+            lambda x: extrair_valor(x["CodBarras"], str(x["FormaPgto"])),
+            axis=1
+        )
 
         # Diferença
         df["Diferenca"] = df["Total"] - df["Valor_CodBarras"]
@@ -52,9 +71,16 @@ if uploaded_file:
         df = df[df["FormaPgto"].astype(str).isin(formas_validas)]
 
         # Criar colunas formatadas para exibição
-        df["Total_Formatado"] = df["Total"].map(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        df["Valor_CodBarras_Formatado"] = df["Valor_CodBarras"].map(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if pd.notnull(x) else "")
-        df["Diferenca_Formatada"] = df["Diferenca"].map(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+        df["Total_Formatado"] = df["Total"].map(
+            lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
+        df["Valor_CodBarras_Formatado"] = df["Valor_CodBarras"].map(
+            lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            if pd.notnull(x) else ""
+        )
+        df["Diferenca_Formatada"] = df["Diferenca"].map(
+            lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
 
         # Filtro de status
         filtro = st.radio("Filtrar resultados:", ["Todos", "Somente Divergentes", "Somente OK"])
@@ -67,7 +93,14 @@ if uploaded_file:
 
         # Mostrar só colunas relevantes já formatadas
         st.dataframe(
-            df_filtrado[["FormaPgto", "CodBarras", "Total_Formatado", "Valor_CodBarras_Formatado", "Diferenca_Formatada", "Status"]],
+            df_filtrado[[
+                "FormaPgto",
+                "CodBarras",
+                "Total_Formatado",
+                "Valor_CodBarras_Formatado",
+                "Diferenca_Formatada",
+                "Status"
+            ]],
             use_container_width=True
         )
 
@@ -78,11 +111,18 @@ if uploaded_file:
                 dataframe.to_excel(writer, index=False, sheet_name="Validacao")
             return output.getvalue()
 
-        excel_file = to_excel(df_filtrado[["FormaPgto", "CodBarras", "Total_Formatado", "Valor_CodBarras_Formatado", "Diferenca_Formatada", "Status"]])
+        excel_file = to_excel(
+            df_filtrado[[
+                "FormaPgto",
+                "CodBarras",
+                "Total_Formatado",
+                "Valor_CodBarras_Formatado",
+                "Diferenca_Formatada",
+                "Status"
+            ]]
+        )
 
         st.download_button(
             label="📥 Baixar Excel",
             data=excel_file,
-            file_name="boletos_validacao.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
+
