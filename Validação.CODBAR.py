@@ -43,7 +43,7 @@ if uploaded_file:
             try:
                 codbarras = str(codbarras)
                 if forma in ["30", "31"]:  # posições 09 a 19
-                    valor_centavos = int(codbarras[10:18])
+                    valor_centavos = int(codbarras[09:18])
                 elif forma in ["19", "91", "11"]:  # posições 08 a 18
                     valor_centavos = int(codbarras[8:18])
                 else:
