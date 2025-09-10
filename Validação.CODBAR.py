@@ -31,7 +31,7 @@ if uploaded_file:
         # Extrair valor do código de barras (posição 10 a 18)
         def extrair_valor(codbarras):
             try:
-                valor_centavos = int(str(codbarras)[9:18])  # índice começa em 0
+                valor_centavos = int(str(codbarras)[9:19])  # índice começa em 0
                 return valor_centavos / 100  # converte para reais
             except:
                 return None
