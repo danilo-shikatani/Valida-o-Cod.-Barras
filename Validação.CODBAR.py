@@ -17,7 +17,7 @@ if uploaded_file:
     df.columns = df.columns.str.strip().str.lower()
 
     # Verifica se as colunas obrigatórias existem
-    colunas_obrigatorias = ["cod.barras", "total", "forma pgto.", "filial", "no. titulo"]
+    colunas_obrigatorias = ["cod.barras", "total", "forma pgto.", "filial", "no. titulo", "situacao"]
     faltando = [col for col in colunas_obrigatorias if col not in df.columns]
 
     if faltando:
@@ -29,8 +29,12 @@ if uploaded_file:
             "total": "Total",
             "forma pgto.": "FormaPgto",
             "filial": "Filial",
-            "no. titulo": "NoTitulo"
+            "no. titulo": "NoTitulo",
+            "situacao": "Situacao"
         })
+
+        # 🔎 Filtra para desconsiderar títulos baixados (ignora maiúsc/minúsc)
+        df = df[df["Situacao"].str.strip().str.lower() != "titulo baixado"]
 
         # Função de extração do valor do código de barras, variando por forma de pagamento
         def extrair_valor(codbarras, forma):
@@ -95,7 +99,8 @@ if uploaded_file:
                 "Valor_Total_Titulo",
                 "Valor_CodBarras_Formatado",
                 "Diferenca_ft",
-                "Status"
+                "Status",
+                "Situacao"
             ]],
             use_container_width=True
         )
@@ -116,7 +121,8 @@ if uploaded_file:
                 "Valor_Total_Titulo",
                 "Valor_CodBarras_Formatado",
                 "Diferenca_ft",
-                "Status"
+                "Status",
+                "Situacao"
             ]]
         )
 
@@ -126,3 +132,4 @@ if uploaded_file:
             file_name="boletos_validacao.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+
